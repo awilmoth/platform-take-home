@@ -47,7 +47,7 @@ func StartGRPCGateway(ctx context.Context, host string, port int) error {
 	rootMux := http.NewServeMux()
 
 	// Add health check endpoint
-	rootMux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	rootMux.HandleFunc("/health", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		if _, err := w.Write([]byte(`{"status":"ok"}`)); err != nil {
