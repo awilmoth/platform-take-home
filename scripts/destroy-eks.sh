@@ -38,8 +38,6 @@ destroy_eks() {
 
     # Delete Kubernetes resources
     log "Deleting Kubernetes resources..."
-    kubectl delete -f k8s/app-${env_name}.yaml || true
-    kubectl delete -f k8s/postgres-${env_name}.yaml || true
     kubectl delete secret app-env || true
 
     # Delete EKS cluster
