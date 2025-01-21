@@ -31,7 +31,7 @@ func WithDefaultLogger(ctx context.Context, options ...zap.Option) (context.Cont
 type key int
 
 var (
-	loggerKey       key = 0
+	loggerKey       key
 	serviceLabelKey key = 1
 )
 
@@ -76,7 +76,7 @@ func FromContext(ctx context.Context) *zap.Logger {
 }
 
 func UnaryServerInterceptor(logger *zap.Logger, sampleRate float64) grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		loggerForContext := logger
 		traceID, ok := TraceIDFromContext(ctx)
 		if ok {
