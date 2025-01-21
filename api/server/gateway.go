@@ -3,17 +3,19 @@ package server
 import (
 	"context"
 	"errors"
+
 	"github.com/rs/cors"
 	"github.com/skip-mev/platform-take-home/observability/logging"
 	"go.uber.org/zap"
 
 	"fmt"
+	"net"
+	"net/http"
+
 	"github.com/skip-mev/platform-take-home/api/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/encoding/protojson"
-	"net"
-	"net/http"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 )
@@ -41,9 +43,21 @@ func StartGRPCGateway(ctx context.Context, host string, port int) error {
 		return fmt.Errorf("error creating listener: %v", err)
 	}
 
+	// Create a new mux for both health check and gRPC gateway
+	rootMux := http.NewServeMux()
+
+	// Add health check endpoint
+	rootMux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ok"}`))
+	})
+
+	// Add gRPC gateway endpoints
 	corsMiddleware := cors.New(cors.Options{})
-	handler := corsMiddleware.Handler(mux)
-	server := http.Server{Handler: handler}
+	grpcHandler := corsMiddleware.Handler(mux)
+	rootMux.Handle("/", grpcHandler)
+
+	server := http.Server{Handler: rootMux}
 
 	go func() {
 		<-ctx.Done()
