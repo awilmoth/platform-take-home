@@ -39,6 +39,9 @@ jobs:
       
       - uses: actions/checkout@v4
       
+      - name: Tidy modules
+        run: go mod tidy
+      
       - name: Cache golangci-lint workspace
         uses: actions/cache@v4
         with:
