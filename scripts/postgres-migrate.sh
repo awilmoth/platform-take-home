@@ -17,6 +17,14 @@ for var in "${required_vars[@]}"; do
     fi
 done
 
+# Diagnostic information about Go environment
+log "Go Environment Diagnostics:"
+log "Go Version:"
+go version || log "Error: go command not found"
+log "GOPATH: $GOPATH"
+log "GOROOT: $GOROOT"
+log "PATH: $PATH"
+
 # Wait for Postgres to be ready
 max_attempts=30
 attempt=0
@@ -54,8 +62,7 @@ else
     exit 1
 fi
 
-# Run migrations using a custom Go script to avoid OpenTelemetry context issues
-log "Executing migration script..."
+# Prepare migration script
 MIGRATION_SCRIPT=$(cat << 'EOF'
 package main
 
@@ -84,8 +91,17 @@ func main() {
 EOF
 )
 
-MIGRATION_OUTPUT=$(go run <(echo "$MIGRATION_SCRIPT") 2>&1)
+# Write migration script to a file
+MIGRATION_SCRIPT_FILE=$(mktemp)
+echo "$MIGRATION_SCRIPT" > "$MIGRATION_SCRIPT_FILE"
+
+# Run migrations with full path to go binary and verbose output
+log "Executing migration script..."
+MIGRATION_OUTPUT=$(/usr/local/go/bin/go run "$MIGRATION_SCRIPT_FILE" 2>&1)
 MIGRATE_EXIT_CODE=$?
+
+# Clean up temporary script file
+rm "$MIGRATION_SCRIPT_FILE"
 
 if [ $MIGRATE_EXIT_CODE -eq 0 ]; then
     log "Migrations completed successfully"
