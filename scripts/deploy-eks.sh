@@ -68,7 +68,7 @@ deploy_application() {
 
     # Create Kubernetes secrets from .env
     kubectl create secret generic app-env \
-        --from-env-file=.env
+        --from-env-file=../.env
 
     # Deploy Postgres
     kubectl apply -f k8s/postgres-${env_name}.yaml

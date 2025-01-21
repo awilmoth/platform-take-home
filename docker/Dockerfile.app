@@ -20,11 +20,18 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Install postgresql-client for pg_isready
-RUN apk add --no-cache postgresql-client bash
+# Install required packages
+RUN apk add --no-cache postgresql-client bash go
 
-# Copy the built binary
+# Copy the built binary and necessary Go files
 COPY --from=builder /app/server /app/server
+COPY --from=builder /app/go.mod /app/go.mod
+COPY --from=builder /app/go.sum /app/go.sum
+COPY --from=builder /app/store /app/store
+
+# Set up Go environment
+ENV GOPATH=/go
+ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 
 # Copy migration script
 COPY scripts/postgres-migrate.sh /scripts/postgres-migrate.sh

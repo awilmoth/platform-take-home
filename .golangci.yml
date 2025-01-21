@@ -1,5 +1,6 @@
 run:
-  timeout: 2m
+  timeout: 1m
+  go: '1.21'
   issues:
     exclude-dirs:
       - vendor
@@ -22,7 +23,13 @@ linters-settings:
   revive:
     confidence: 0.8
   govet:
-    enable-all: true
+    check-shadowing: true
+    fieldalignment: true
+    nilfunc: true
+    nilness: true
+    printf: true
+    structtag: true
+    unreachable: true
   gofmt:
     simplify: true
   golint:
