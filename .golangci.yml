@@ -1,5 +1,5 @@
 run:
-  timeout: 30s
+  timeout: 2m
   go: '1.22'
   issues:
     exclude-dirs:
@@ -9,6 +9,7 @@ run:
       - api/types  # Exclude generated protobuf files
   concurrency: 2
   max-same-issues: 10
+  allow-parallel-runners: true
 
 linters:
   disable-all: true
