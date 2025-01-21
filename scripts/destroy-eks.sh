@@ -46,9 +46,6 @@ destroy_eks() {
     log "Destroying EKS cluster: $CLUSTER_NAME"
     eksctl delete cluster --name "$CLUSTER_NAME" --region us-west-2
 
-    # Clean up local configuration
-    log "Cleaning up kubectl configuration..."
-    kubectl config delete-context "$CLUSTER_NAME"
 }
 
 # Main script

@@ -26,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      GOGC: 50
-      GOMAXPROCS: 2
+      GOGC: 200  # Increased from 50 to reduce GC frequency
+      GOMAXPROCS: 4  # Increased from 2 to allow more parallel processing
       GOTOOLCHAIN: local
       GOFLAGS: "-buildvcs=false"
       GO111MODULE: on
@@ -56,10 +56,10 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.57.2
-          args: --timeout=5m
+          args: --timeout=5m --max-issues-per-linter=0 --max-same-issues=0  # Removed limitation on issues
           skip-cache: false
           install-mode: binary
-          only-new-issues: true
+          # Removed only-new-issues to prevent potential resource constraints
 
   proto-gen:
     runs-on: ubuntu-latest
