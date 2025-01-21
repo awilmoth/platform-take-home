@@ -30,6 +30,7 @@ jobs:
       GOMAXPROCS: 2
       GOLANGCI_LINT_CACHE: /tmp/golangci-cache
       GOTOOLCHAIN: local
+      GOFLAGS: "-buildvcs=false"
     container:
       image: golang:1.22-alpine
       options: --memory=1g --cpus=1 --memory-swap=1g
@@ -68,6 +69,7 @@ jobs:
     timeout-minutes: 10
     env:
       GOTOOLCHAIN: local
+      GOFLAGS: "-buildvcs=false"
     steps:
       - uses: actions/checkout@v4
       
@@ -122,6 +124,7 @@ jobs:
     timeout-minutes: 15
     env:
       GOTOOLCHAIN: local
+      GOFLAGS: "-buildvcs=false"
     steps:
       - uses: actions/checkout@v4
 
