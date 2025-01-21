@@ -16,7 +16,6 @@ linters:
     - gosimple
     - unused
     - gofmt
-    - shadow
 
 linters-settings:
   revive:
