@@ -34,13 +34,16 @@ jobs:
       image: golang:1.22-alpine
       options: --memory=1g --cpus=1 --memory-swap=1g
     steps:
-      - name: Install git
-        run: apk add --no-cache git
+      - name: Install dependencies
+        run: apk add --no-cache git build-base
       
       - uses: actions/checkout@v4
       
-      - name: Tidy modules
-        run: go mod tidy
+      - name: Set up Go environment
+        run: |
+          go mod download
+          go mod verify
+          go mod tidy
       
       - name: Cache golangci-lint workspace
         uses: actions/cache@v4

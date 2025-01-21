@@ -1,6 +1,8 @@
 module github.com/skip-mev/platform-take-home
 
-go 1.22
+go 1.22.7
+
+toolchain go1.23.5
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0

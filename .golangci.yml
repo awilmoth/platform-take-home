@@ -1,31 +1,26 @@
 run:
   timeout: 30s
-  go: '1.21'
+  go: '1.22'
   issues:
     exclude-dirs:
       - vendor
       - third_party
       - .git
       - api/types  # Exclude generated protobuf files
-  # Add concurrency limit
   concurrency: 2
-  # Add memory limit
   max-same-issues: 10
 
 linters:
   disable-all: true
   enable:
-    # Enable only essential linters
     - gofmt      # Fast, no complex analysis
     - govet      # Essential checks
     - errcheck   # Critical error checking
     - staticcheck # Important but efficient
+    - shadow     # Replaces check-shadowing
 
 linters-settings:
-  revive:
-    confidence: 0.8
   govet:
-    check-shadowing: true
     fieldalignment: true
     nilfunc: true
     nilness: true
@@ -34,8 +29,8 @@ linters-settings:
     unreachable: true
   gofmt:
     simplify: true
-  golint:
-    min-confidence: 0  # Disabled, use revive instead
+  shadow:
+    strict: true
 
 issues:
   exclude-rules:
