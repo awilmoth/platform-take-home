@@ -27,9 +27,6 @@ linters-settings:
     simplify: true
   golint:
     min-confidence: 0  # Disabled, use revive instead
-  shadow:
-    # Optionally configure shadow linter
-    # Add any specific shadow linter settings here
 
 issues:
   exclude-rules:
