@@ -66,7 +66,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.57.2
-          args: --timeout=5m --max-same-issues=10 --max-issues-per-linter=10 --modules-download-mode=readonly --allow-parallel-runners --verbose --debug
+          args: --timeout=5m --max-same-issues=10 --max-issues-per-linter=10 --modules-download-mode=readonly --allow-parallel-runners --verbose
           skip-cache: false
           install-mode: binary
           only-new-issues: true
