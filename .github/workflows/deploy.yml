@@ -262,8 +262,10 @@ jobs:
             name: skip-platform-service
             namespace: $NAMESPACE
             annotations:
-              service.beta.kubernetes.io/aws-load-balancer-type: external
+              service.beta.kubernetes.io/aws-load-balancer-type: nlb
+              service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
               service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+              service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
           spec:
             type: LoadBalancer
             selector:
@@ -282,8 +284,10 @@ jobs:
             name: skip-platform-service
             namespace: $NAMESPACE
             annotations:
-              service.beta.kubernetes.io/aws-load-balancer-type: external
+              service.beta.kubernetes.io/aws-load-balancer-type: nlb
+              service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
               service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+              service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
           spec:
             type: LoadBalancer
             selector:
