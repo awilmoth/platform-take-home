@@ -1,10 +1,11 @@
 run:
-  timeout: 5m
+  timeout: 2m
   issues:
     exclude-dirs:
       - vendor
       - third_party
       - .git
+      - api/types  # Exclude generated protobuf files
 
 linters:
   disable-all: true
@@ -35,3 +36,9 @@ issues:
         - errcheck
         - dupl
         - gosec
+    - path: .*\.pb\.go
+      linters:
+        - all
+    - path: api/types/.*\.pb\.go
+      linters:
+        - all

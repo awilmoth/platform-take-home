@@ -95,9 +95,9 @@ EOF
 MIGRATION_SCRIPT_FILE=$(mktemp)
 echo "$MIGRATION_SCRIPT" > "$MIGRATION_SCRIPT_FILE"
 
-# Run migrations with full path to go binary and verbose output
+# Run migrations using go command
 log "Executing migration script..."
-MIGRATION_OUTPUT=$(/usr/local/go/bin/go run "$MIGRATION_SCRIPT_FILE" 2>&1)
+MIGRATION_OUTPUT=$(go run "$MIGRATION_SCRIPT_FILE" 2>&1)
 MIGRATE_EXIT_CODE=$?
 
 # Clean up temporary script file

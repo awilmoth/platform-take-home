@@ -42,7 +42,7 @@ jobs:
       - name: Run golangci-lint
         run: |
           echo "Running golangci-lint..."
-          $(go env GOPATH)/bin/golangci-lint run ./...
+          $(go env GOPATH)/bin/golangci-lint run --timeout=2m --config=.golangci.yml ./...
         shell: bash
         continue-on-error: false
 
