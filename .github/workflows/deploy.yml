@@ -194,59 +194,85 @@ jobs:
           # Configure kubectl
           aws eks update-kubeconfig --name $CLUSTER_NAME --region us-west-2
           
-          # Create blue deployment
-          cat << EOF > blue-deployment.yaml
+          # Determine current active version (blue or green)
+          CURRENT_VERSION=$(kubectl get service skip-platform-service -n $NAMESPACE -o jsonpath='{.spec.selector.version}' 2>/dev/null || echo "blue")
+          echo "Current version: $CURRENT_VERSION"
+          
+          # Set new version to be the opposite
+          if [ "$CURRENT_VERSION" = "blue" ]; then
+            NEW_VERSION="green"
+            OLD_VERSION="blue"
+          else
+            NEW_VERSION="blue"
+            OLD_VERSION="green"
+          fi
+          echo "Deploying new version: $NEW_VERSION"
+          
+          # Create new deployment
+          cat << EOF > deployment.yaml
           apiVersion: apps/v1
           kind: Deployment
           metadata:
-            name: skip-platform-blue
+            name: skip-platform-$NEW_VERSION
             namespace: $NAMESPACE
           spec:
             replicas: 2
             selector:
               matchLabels:
                 app: skip-platform
-                version: blue
+                version: $NEW_VERSION
             template:
               metadata:
                 labels:
                   app: skip-platform
-                  version: blue
+                  version: $NEW_VERSION
               spec:
                 containers:
                 - name: skip-platform
                   image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
                   ports:
                   - containerPort: 8080
+                  readinessProbe:
+                    httpGet:
+                      path: /health
+                      port: 8080
+                    initialDelaySeconds: 5
+                    periodSeconds: 10
+                  livenessProbe:
+                    httpGet:
+                      path: /health
+                      port: 8080
+                    initialDelaySeconds: 15
+                    periodSeconds: 20
           EOF
           
-          # Create green deployment
-          cat << EOF > green-deployment.yaml
-          apiVersion: apps/v1
-          kind: Deployment
+          # Apply new deployment
+          kubectl apply -f deployment.yaml
+          
+          # Wait for new deployment to be ready
+          kubectl rollout status deployment/skip-platform-$NEW_VERSION -n $NAMESPACE
+          
+          # Create rollback service config pointing to old version
+          cat << EOF > service-rollback.yaml
+          apiVersion: v1
+          kind: Service
           metadata:
-            name: skip-platform-green
+            name: skip-platform-service
             namespace: $NAMESPACE
+            annotations:
+              service.beta.kubernetes.io/aws-load-balancer-type: external
+              service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
           spec:
-            replicas: 2
+            type: LoadBalancer
             selector:
-              matchLabels:
-                app: skip-platform
-                version: green
-            template:
-              metadata:
-                labels:
-                  app: skip-platform
-                  version: green
-              spec:
-                containers:
-                - name: skip-platform
-                  image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$IMAGE_TAG
-                  ports:
-                  - containerPort: 8080
+              app: skip-platform
+              version: $OLD_VERSION
+            ports:
+            - port: 80
+              targetPort: 8080
           EOF
-          
-          # Create service
+
+          # Create or update service to point to new version
           cat << EOF > service.yaml
           apiVersion: v1
           kind: Service
@@ -260,20 +286,51 @@ jobs:
             type: LoadBalancer
             selector:
               app: skip-platform
-              version: blue
+              version: $NEW_VERSION
             ports:
             - port: 80
               targetPort: 8080
           EOF
           
-          # Apply deployments and service
-          kubectl apply -f blue-deployment.yaml
-          kubectl apply -f green-deployment.yaml
+          # Apply service to switch traffic
           kubectl apply -f service.yaml
           
-          # Wait for deployments to be ready
-          kubectl rollout status deployment/skip-platform-blue
-          kubectl rollout status deployment/skip-platform-green
+          # Wait for service to stabilize and verify health
+          echo "Waiting for service to stabilize and verifying health..."
+          sleep 30
+          
+          # Get service endpoint
+          SERVICE_IP=$(kubectl get service skip-platform-service -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+          
+          # Verify new version is healthy
+          echo "Verifying new version health at $SERVICE_IP..."
+          HEALTH_CHECK=0
+          for i in {1..6}; do
+            if curl -s -f "http://$SERVICE_IP/health" > /dev/null; then
+              HEALTH_CHECK=1
+              break
+            fi
+            echo "Health check attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          
+          if [ $HEALTH_CHECK -eq 0 ]; then
+            echo "New version failed health checks. Rolling back..."
+            kubectl apply -f service-rollback.yaml
+            kubectl delete deployment skip-platform-$NEW_VERSION -n $NAMESPACE
+            exit 1
+          fi
+          
+          echo "New version is healthy"
+          kubectl get pods -n $NAMESPACE -l "version=$NEW_VERSION" -o wide
+          
+          # If everything is successful, delete old deployment after a grace period
+          if [ -n "$(kubectl get deployment skip-platform-$OLD_VERSION -n $NAMESPACE 2>/dev/null)" ]; then
+            echo "Waiting grace period before removing old deployment..."
+            sleep 60
+            echo "Removing old deployment: $OLD_VERSION"
+            kubectl delete deployment skip-platform-$OLD_VERSION -n $NAMESPACE
+          fi
 
   notify:
     needs: [deploy-blue-green]
