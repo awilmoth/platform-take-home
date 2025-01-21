@@ -28,39 +28,26 @@ jobs:
     env:
       GOGC: 50
       GOMAXPROCS: 2
-      GOLANGCI_LINT_CACHE: /tmp/golangci-cache
       GOTOOLCHAIN: local
       GOFLAGS: "-buildvcs=false"
       GO111MODULE: on
-    container:
-      image: golang:1.22-alpine
-      options: --memory=1g --cpus=1 --memory-swap=1g
     steps:
-      - name: Install dependencies
-        run: apk add --no-cache git build-base
-      
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       
-      - name: Set up Go environment
-        run: |
-          echo "Setting up Go environment..."
-          pwd
-          ls -la
-          go version
-          go env
-          echo "Downloading dependencies..."
-          go mod download
-          go mod verify
-          go mod tidy
-          echo "Listing packages..."
-          go list -f '{{.Dir}}' ./...
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
       
       - name: Cache golangci-lint workspace
         uses: actions/cache@v4
         with:
-          path: /tmp/golangci-cache
+          path: |
+            /home/runner/.cache/golangci-lint
+            /home/runner/.cache/go-build
           key: ${{ runner.os }}-golangci-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-golangci-
