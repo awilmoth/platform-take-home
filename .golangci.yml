@@ -1,5 +1,5 @@
 run:
-  timeout: 2m
+  timeout: 5m
   go: '1.22'
   issues:
     exclude-dirs:
@@ -10,6 +10,14 @@ run:
   concurrency: 2
   max-same-issues: 10
   allow-parallel-runners: true
+  modules-download-mode: readonly
+  debug: true
+
+output:
+  format: github-actions
+  print-issued-lines: true
+  print-linter-name: true
+  sort-results: true
 
 linters:
   disable-all: true
