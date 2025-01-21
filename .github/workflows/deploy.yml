@@ -178,14 +178,22 @@ jobs:
           docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} -f docker/Dockerfile.app .
           docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
       
-      - name: Install eksctl and kubectl
+      - name: Install eksctl and kubectl and aws cli
         run: |
+          # Install eksctl
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
           
+          # Install kubectl
           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
           sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+          
+          # Install AWS CLI
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
       
+
       - name: Blue-Green Deployment
         env:
           NAMESPACE: default
@@ -295,12 +303,21 @@ jobs:
           # Apply service to switch traffic
           kubectl apply -f service.yaml
           
+          # Wait for LoadBalancer to get external hostname and print it
+          echo "Waiting for LoadBalancer endpoint..."
+          while true; do
+            SERVICE_IP=$(kubectl get service skip-platform-service -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+            if [ ! -z "$SERVICE_IP" ]; then
+              echo "Service is available at: http://$SERVICE_IP"
+              break
+            fi
+            echo "Waiting for LoadBalancer to be ready..."
+            sleep 10
+          done
+
           # Wait for service to stabilize and verify health
           echo "Waiting for service to stabilize and verifying health..."
           sleep 30
-          
-          # Get service endpoint
-          SERVICE_IP=$(kubectl get service skip-platform-service -n $NAMESPACE -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
           
           # Verify new version is healthy
           echo "Verifying new version health at $SERVICE_IP..."
@@ -331,6 +348,7 @@ jobs:
             echo "Removing old deployment: $OLD_VERSION"
             kubectl delete deployment skip-platform-$OLD_VERSION -n $NAMESPACE
           fi
+
 
   notify:
     needs: [deploy-blue-green]
