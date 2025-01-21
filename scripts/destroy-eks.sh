@@ -24,7 +24,7 @@ destroy_eks() {
     if [[ ! "$env_name" =~ ^(staging|production)$ ]]; then
         log "Error: Environment must be 'staging' or 'production'"
         exit 1
-    }
+    fi
 
     # Generate cluster name
     CLUSTER_NAME="skip-platform-${env_name}"
