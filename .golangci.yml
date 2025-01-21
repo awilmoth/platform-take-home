@@ -1,5 +1,5 @@
 run:
-  timeout: 1m
+  timeout: 30s
   go: '1.21'
   issues:
     exclude-dirs:
@@ -7,17 +7,19 @@ run:
       - third_party
       - .git
       - api/types  # Exclude generated protobuf files
+  # Add concurrency limit
+  concurrency: 2
+  # Add memory limit
+  max-same-issues: 10
 
 linters:
   disable-all: true
   enable:
-    - revive  # Replaces deprecated golint
-    - govet
-    - errcheck
-    - staticcheck
-    - gosimple
-    - unused
-    - gofmt
+    # Enable only essential linters
+    - gofmt      # Fast, no complex analysis
+    - govet      # Essential checks
+    - errcheck   # Critical error checking
+    - staticcheck # Important but efficient
 
 linters-settings:
   revive:

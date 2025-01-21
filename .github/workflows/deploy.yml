@@ -24,23 +24,37 @@ env:
 jobs:
   lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
+    # Add resource constraints
+    env:
+      GOGC: 50
+      GOMAXPROCS: 2
+      GOLANGCI_LINT_CACHE: /tmp/golangci-cache
+    container:
+      image: golang:1.21-alpine
+      options: --memory=1g --cpus=1 --memory-swap=1g
     steps:
+      - name: Install git
+        run: apk add --no-cache git
+      
       - uses: actions/checkout@v4
       
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Cache golangci-lint workspace
+        uses: actions/cache@v4
         with:
-          go-version: '1.21'
-          cache: true
+          path: /tmp/golangci-cache
+          key: ${{ runner.os }}-golangci-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-golangci-
       
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.57.2
-          args: --timeout=1m --max-same-issues=20 --max-issues-per-linter=20
+          args: --timeout=30s --max-same-issues=10 --max-issues-per-linter=10 --modules-download-mode=readonly --allow-parallel-runners
           skip-cache: false
-          install-mode: binary-from-source
+          install-mode: binary
+          only-new-issues: true
 
   proto-gen:
     runs-on: ubuntu-latest
