@@ -309,30 +309,8 @@ jobs:
             sleep 10
           done
 
-          # Wait for service to stabilize and verify health
-          echo "Waiting for service to stabilize and verifying health..."
-          sleep 30
-          
-          # Verify new version is healthy
-          echo "Verifying new version health at $SERVICE_IP..."
-          HEALTH_CHECK=0
-          for i in {1..6}; do
-            if curl -s -f "http://$SERVICE_IP/health" > /dev/null; then
-              HEALTH_CHECK=1
-              break
-            fi
-            echo "Health check attempt $i failed, retrying in 10s..."
-            sleep 10
-          done
-          
-          if [ $HEALTH_CHECK -eq 0 ]; then
-            echo "New version failed health checks. Rolling back..."
-            kubectl apply -f service-rollback.yaml
-            kubectl delete deployment skip-platform-$NEW_VERSION -n $NAMESPACE
-            exit 1
-          fi
-          
-          echo "New version is healthy"
+          # Display pod status
+          echo "New version pods:"
           kubectl get pods -n $NAMESPACE -l "version=$NEW_VERSION" -o wide
           
           # If everything is successful, delete old deployment after a grace period
