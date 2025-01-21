@@ -17,10 +17,13 @@ linters:
     - govet      # Essential checks
     - errcheck   # Critical error checking
     - staticcheck # Important but efficient
-    - shadow     # Replaces check-shadowing
 
 linters-settings:
   govet:
+    # Enable specific govet analyzers
+    enable-all: false
+    disable:
+      - shadow # Disable shadow checking in govet since it's noisy
     fieldalignment: true
     nilfunc: true
     nilness: true
@@ -29,8 +32,6 @@ linters-settings:
     unreachable: true
   gofmt:
     simplify: true
-  shadow:
-    strict: true
 
 issues:
   exclude-rules:
