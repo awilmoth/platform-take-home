@@ -25,6 +25,8 @@ linters-settings:
     enable-all: true
   gofmt:
     simplify: true
+  golint:
+    min-confidence: 0  # Disabled, use revive instead
 
 issues:
   exclude-rules:
@@ -34,8 +36,3 @@ issues:
         - errcheck
         - dupl
         - gosec
-
-# Explicitly disable deprecated linters
-linters-settings:
-  golint:
-    min-confidence: 0  # Disabled, use revive instead
