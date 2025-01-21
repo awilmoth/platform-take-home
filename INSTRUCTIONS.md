@@ -83,18 +83,39 @@ nano .env  # Customize your configuration
 ./scripts/deploy-eks.sh
 ```
 
+### Destroying EKS Cluster
+```bash
+# Interactively choose environment to destroy
+./scripts/destroy-eks.sh
+```
+
+## GitHub Actions Deployment
+
+### Manual Deployment
+1. Go to the "Actions" tab in the GitHub repository
+2. Select "Manual EKS Deployment" workflow
+3. Click "Run workflow"
+4. Choose deployment environment (staging/production)
+5. Optionally force deployment
+
+### Workflow Features
+- Code validation and linting
+- Automated testing
+- Docker image build and push
+- Blue-Green EKS deployment
+- Slack notifications for failures
+
+### Required Secrets
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `SLACK_WEBHOOK` (optional)
+
 ### Deployment Notes
 - Interactively choose staging or production
 - Creates EKS cluster automatically
 - Configures Kubernetes secrets
 - Deploys Postgres and application services
 - Region defaults to us-west-2 (customizable in script)
-
-### Destroying EKS Cluster
-```bash
-# Interactively choose environment to destroy
-./scripts/destroy-eks.sh
-```
 
 #### Destroy Options
 - Supports staging and production environments
@@ -117,3 +138,4 @@ nano .env  # Customize your configuration
 - Secure environment configuration
 - Supports local and EKS deployment
 - Provides EKS cluster management scripts
+- Comprehensive CI/CD pipeline with GitHub Actions
