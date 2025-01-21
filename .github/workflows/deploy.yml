@@ -25,14 +25,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Add resource constraints
     env:
       GOGC: 50
       GOMAXPROCS: 2
       GOLANGCI_LINT_CACHE: /tmp/golangci-cache
       GOTOOLCHAIN: local
     container:
-      image: golang:1.23-rc-alpine
+      image: golang:1.22-alpine
       options: --memory=1g --cpus=1 --memory-swap=1g
     steps:
       - name: Install git
@@ -60,13 +59,15 @@ jobs:
   proto-gen:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GOTOOLCHAIN: local
     steps:
       - uses: actions/checkout@v4
       
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23.2'
+          go-version: '1.22'
           cache: true
       
       - name: Install Protobuf Tools
@@ -112,6 +113,8 @@ jobs:
     needs: [lint, proto-gen]
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      GOTOOLCHAIN: local
     steps:
       - uses: actions/checkout@v4
 
@@ -124,7 +127,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23.2'
+          go-version: '1.22'
           cache: true
       
       - name: Download dependencies
