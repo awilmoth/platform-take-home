@@ -44,6 +44,7 @@ jobs:
           go mod download
           go mod verify
           go mod tidy
+          go list -json ./... > /dev/null
       
       - name: Cache golangci-lint workspace
         uses: actions/cache@v4
@@ -57,7 +58,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: v1.57.2
-          args: --timeout=30s --max-same-issues=10 --max-issues-per-linter=10 --modules-download-mode=readonly --allow-parallel-runners
+          args: --timeout=2m --max-same-issues=10 --max-issues-per-linter=10 --modules-download-mode=readonly --allow-parallel-runners --verbose
           skip-cache: false
           install-mode: binary
           only-new-issues: true
